@@ -28,6 +28,12 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'transportadora' => [
+        'url' => env('TRANSPORTADORA_URL', 'https://tarifas.transportadora.test/v1'),
+        'token' => env('TRANSPORTADORA_TOKEN'),
+        'timeout' => (int) env('TRANSPORTADORA_TIMEOUT', 10),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
