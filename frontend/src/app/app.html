@@ -1,18 +1,46 @@
 @if (auth.usuario(); as usuario) {
-  <header class="barra">
-    <span class="marca">Empresa Logística</span>
-    <nav>
-      <a routerLink="/pedidos" routerLinkActive="activo" [routerLinkActiveOptions]="{ exact: true }">Pedidos</a>
-      <a routerLink="/pedidos/nuevo" routerLinkActive="activo">Nuevo pedido</a>
-      <a routerLink="/reportes/ventas-por-cliente" routerLinkActive="activo">Ventas por cliente</a>
-    </nav>
-    <div class="usuario">
-      <span>{{ usuario.name }} <small class="rol">{{ usuario.rol }}</small></span>
-      <button type="button" class="btn btn-secundario" (click)="salir()">Salir</button>
-    </div>
-  </header>
-}
+  <div class="shell">
+    <aside class="sidebar">
+      <a routerLink="/pedidos" class="brand">
+        <span class="brand-logo"><app-icon name="truck" [size]="20" /></span>
+        <span class="brand-text">
+          <strong>Empresa Logística</strong>
+          <small>Gestión de despachos</small>
+        </span>
+      </a>
 
-<main class="contenido">
+      <nav class="nav" aria-label="Principal">
+        <span class="nav-title">Operación</span>
+        @for (item of menu; track item.ruta) {
+          <a
+            class="nav-link"
+            [routerLink]="item.ruta"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: item.exacta }"
+            ariaCurrentWhenActive="page"
+          >
+            <app-icon [name]="item.icono" />
+            <span>{{ item.etiqueta }}</span>
+          </a>
+        }
+      </nav>
+
+      <div class="user">
+        <span class="avatar">{{ iniciales() }}</span>
+        <span class="user-info">
+          <strong>{{ usuario.name }}</strong>
+          <small>{{ usuario.rol === 'admin' ? 'Administrador' : 'Operador' }}</small>
+        </span>
+        <button type="button" class="logout" aria-label="Cerrar sesión" title="Cerrar sesión" (click)="salir()">
+          <app-icon name="log-out" />
+        </button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <router-outlet />
+    </main>
+  </div>
+} @else {
   <router-outlet />
-</main>
+}

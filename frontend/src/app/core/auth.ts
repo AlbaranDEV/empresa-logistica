@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Service, signal } from '@angular/core';
-import { finalize, map, Observable, tap } from 'rxjs';
+import { catchError, map, Observable, of, tap } from 'rxjs';
 import { Sesion } from './models';
 
 const CLAVE_SESION = 'logistica.sesion';
@@ -22,8 +22,13 @@ export class Auth {
     );
   }
 
+  /** Revoca el token en el servidor; la sesión local se cierra aunque esa llamada falle. */
   logout(): Observable<void> {
-    return this.http.post<void>('/api/logout', {}).pipe(finalize(() => this.limpiar()));
+    return this.http.post<void>('/api/logout', {}).pipe(
+      catchError(() => of(undefined)),
+      tap(() => this.limpiar()),
+      map(() => undefined),
+    );
   }
 
   limpiar(): void {

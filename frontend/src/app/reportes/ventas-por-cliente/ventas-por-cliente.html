@@ -1,43 +1,137 @@
+<header class="page-header">
+  <div>
+    <span class="eyebrow">Reportes</span>
+    <h1>Ventas por cliente</h1>
+    <p>
+      Total vendido a cada cliente
+      @if (reporte.hasValue()) {
+        en <strong class="mes">{{ reporte.value().mes + '-01' | date: 'MMMM y' : 'UTC' }}</strong>,
+      } @else {
+        en el mes actual,
+      }
+      de mayor a menor.
+    </p>
+  </div>
+</header>
+
 @if (reporte.error()) {
-  <h1>Ventas por cliente</h1>
-  <div class="alerta" role="alert">No fue posible cargar el reporte.</div>
-} @else if (reporte.hasValue()) {
-  @let resultado = reporte.value();
-
-  <div class="encabezado">
-    <h1>Ventas por cliente · <span class="mes">{{ resultado.mes + '-01' | date: 'MMMM y' : 'UTC' }}</span></h1>
-    <strong>Total del mes: {{ totalGeneral() | currency: 'COP' : 'symbol-narrow' : '1.0-2' }}</strong>
-  </div>
-
-  <div class="tarjeta tabla-contenedor">
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Cliente</th>
-          <th>Ciudad</th>
-          <th class="num">Pedidos</th>
-          <th class="num">Total vendido</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (cliente of resultado.data; track cliente.id; let posicion = $index) {
-          <tr>
-            <td>{{ posicion + 1 }}</td>
-            <td>{{ cliente.nombre }}</td>
-            <td>{{ cliente.ciudad }}</td>
-            <td class="num">{{ cliente.cantidad_pedidos }}</td>
-            <td class="num">{{ cliente.total_vendido | currency: 'COP' : 'symbol-narrow' : '1.0-2' }}</td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="5" class="suave">No hay ventas registradas en el mes actual.</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  </div>
+  <section class="card">
+    <div class="empty">
+      <span class="empty-icon"><app-icon name="alert" [size]="22" /></span>
+      <strong>No fue posible cargar el reporte</strong>
+      <button type="button" class="btn btn-secondary btn-sm" (click)="reporte.reload()">Reintentar</button>
+    </div>
+  </section>
 } @else {
-  <h1>Ventas por cliente</h1>
-  <p class="suave">Cargando reporte…</p>
+  @let r = resumen();
+  @let listo = reporte.hasValue();
+
+  <section class="kpis" aria-label="Resumen del mes">
+    <article class="card kpi">
+      <span class="kpi-icon"><app-icon name="wallet" /></span>
+      <span class="kpi-label">Total vendido</span>
+      @if (listo) {
+        <strong class="kpi-value">{{ r.total | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+      } @else {
+        <span class="skeleton kpi-skeleton"></span>
+      }
+    </article>
+    <article class="card kpi">
+      <span class="kpi-icon"><app-icon name="package" /></span>
+      <span class="kpi-label">Pedidos del mes</span>
+      @if (listo) {
+        <strong class="kpi-value">{{ r.pedidos }}</strong>
+      } @else {
+        <span class="skeleton kpi-skeleton"></span>
+      }
+    </article>
+    <article class="card kpi">
+      <span class="kpi-icon"><app-icon name="users" /></span>
+      <span class="kpi-label">Clientes con compras</span>
+      @if (listo) {
+        <strong class="kpi-value">{{ r.clientes }}</strong>
+      } @else {
+        <span class="skeleton kpi-skeleton"></span>
+      }
+    </article>
+    <article class="card kpi">
+      <span class="kpi-icon"><app-icon name="receipt" /></span>
+      <span class="kpi-label">Ticket promedio</span>
+      @if (listo) {
+        <strong class="kpi-value">{{ r.ticketPromedio | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+      } @else {
+        <span class="skeleton kpi-skeleton"></span>
+      }
+    </article>
+  </section>
+
+  <section class="card">
+    <div class="card-header">
+      <div>
+        <h2>Ranking de clientes</h2>
+        <p>Participación de cada cliente en las ventas del mes.</p>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="rank">#</th>
+            <th>Cliente</th>
+            <th class="num">Pedidos</th>
+            <th class="share-col">Participación</th>
+            <th class="num">Total vendido</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (reporte.hasValue()) {
+            @for (cliente of reporte.value().data; track cliente.id; let posicion = $index) {
+              @let vendido = cliente.total_vendido ?? 0;
+              <tr>
+                <td class="rank"><span class="rank-badge" [class.top]="posicion === 0">{{ posicion + 1 }}</span></td>
+                <td class="primary-cell">
+                  {{ cliente.nombre }}
+                  <span class="secondary-line">{{ cliente.ciudad }}</span>
+                </td>
+                <td class="num">{{ cliente.cantidad_pedidos }}</td>
+                <td class="share-col">
+                  <div
+                    class="share"
+                    [title]="cliente.nombre + ': ' + (vendido | currency: 'COP' : 'symbol-narrow' : '1.0-0') + ' (' + (vendido / r.total | percent: '1.1-1') + ' del total)'"
+                  >
+                    <span class="bar-track">
+                      <span class="bar" [style.width.%]="r.maximo ? (vendido / r.maximo) * 100 : 0"></span>
+                    </span>
+                    <span class="share-value tabular">{{ vendido / r.total | percent: '1.1-1' }}</span>
+                  </div>
+                </td>
+                <td class="num primary-cell">{{ vendido | currency: 'COP' : 'symbol-narrow' : '1.0-2' }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5">
+                  <div class="empty">
+                    <span class="empty-icon"><app-icon name="chart" [size]="22" /></span>
+                    <strong>Sin ventas este mes</strong>
+                    <p>Cuando registres pedidos del mes aparecerán aquí.</p>
+                  </div>
+                </td>
+              </tr>
+            }
+          } @else {
+            @for (fila of [1, 2, 3, 4]; track fila) {
+              <tr aria-hidden="true">
+                <td><span class="skeleton" style="width: 20px"></span></td>
+                <td><span class="skeleton" style="width: 160px"></span></td>
+                <td><span class="skeleton" style="width: 30px; margin-left: auto"></span></td>
+                <td><span class="skeleton" style="width: 180px"></span></td>
+                <td><span class="skeleton" style="width: 110px; margin-left: auto"></span></td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
 }

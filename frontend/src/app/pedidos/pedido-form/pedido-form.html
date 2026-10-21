@@ -1,24 +1,40 @@
-<section class="tarjeta formulario">
-  <h1>{{ editando() ? 'Editar pedido #' + id() : 'Nuevo pedido' }}</h1>
+<a routerLink="/pedidos" class="back"><app-icon name="arrow-left" [size]="16" /> Volver a pedidos</a>
 
+<header class="page-header">
+  <div>
+    <span class="eyebrow">Pedidos</span>
+    <h1>{{ editando() ? 'Editar pedido #' + id() : 'Nuevo pedido' }}</h1>
+    <p>
+      {{ editando() ? 'Corrige los datos del pedido.' : 'Registra un pedido; quedará en estado pendiente hasta su despacho.' }}
+    </p>
+  </div>
   @if (pedido(); as actual) {
-    <p>Estado actual: <span class="estado" [class]="actual.estado">{{ actual.estado }}</span></p>
+    <span class="badge" [class]="actual.estado">{{ actual.estado }}</span>
   }
+</header>
 
-  @if (bloqueado()) {
-    <div class="alerta" role="alert">
-      Este pedido ya fue entregado. Solo un administrador puede modificarlo.
+@if (bloqueado()) {
+  <div class="alert alert-warning" role="alert">
+    <app-icon name="lock" /> Este pedido ya fue entregado. Solo un administrador puede modificarlo.
+  </div>
+}
+
+@if (error(); as mensaje) {
+  <div class="alert" role="alert"><app-icon name="alert" /> {{ mensaje }}</div>
+}
+
+<form class="card" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+  <div class="card-header">
+    <div>
+      <h2>Datos del pedido</h2>
+      <p>Todos los campos son obligatorios.</p>
     </div>
-  }
+  </div>
 
-  @if (error(); as mensaje) {
-    <div class="alerta" role="alert">{{ mensaje }}</div>
-  }
-
-  <form [formGroup]="form" (ngSubmit)="guardar()">
-    <div class="campo">
+  <div class="card-body grid">
+    <div class="field full">
       <label for="cliente">Cliente</label>
-      <select id="cliente" formControlName="cliente_id">
+      <select id="cliente" class="select" formControlName="cliente_id">
         <option [ngValue]="0" disabled>Selecciona un cliente</option>
         @if (clientes.hasValue()) {
           @for (cliente of clientes.value().data; track cliente.id) {
@@ -27,31 +43,45 @@
         }
       </select>
       @if (form.controls.cliente_id.touched && form.controls.cliente_id.invalid) {
-        <span class="error-campo">Selecciona un cliente.</span>
+        <span class="field-error">Selecciona un cliente.</span>
+      } @else {
+        <span class="hint">La ciudad del cliente se usa como destino para cotizar el envío.</span>
       }
     </div>
 
-    <div class="campo">
-      <label for="total">Total (COP)</label>
-      <input id="total" type="number" min="0.01" step="0.01" formControlName="total" />
+    <div class="field">
+      <label for="total">Total</label>
+      <div class="input-group">
+        <span class="prefix">$</span>
+        <input id="total" class="input" type="number" min="0.01" step="0.01" formControlName="total" inputmode="decimal" placeholder="0" />
+      </div>
       @if (form.controls.total.touched && form.controls.total.invalid) {
-        <span class="error-campo">El total debe ser mayor que cero.</span>
+        <span class="field-error">El total debe ser mayor que cero.</span>
+      } @else {
+        <span class="hint">Valor en pesos colombianos (COP).</span>
       }
     </div>
 
-    <div class="campo">
-      <label for="fecha">Fecha</label>
-      <input id="fecha" type="date" formControlName="fecha" />
+    <div class="field">
+      <label for="fecha">Fecha del pedido</label>
+      <input id="fecha" class="input" type="date" formControlName="fecha" />
       @if (form.controls.fecha.touched && form.controls.fecha.invalid) {
-        <span class="error-campo">La fecha es obligatoria.</span>
+        <span class="field-error">La fecha es obligatoria.</span>
       }
     </div>
+  </div>
 
-    <div class="botones">
-      <a routerLink="/pedidos" class="btn btn-secundario">Cancelar</a>
+  <div class="card-footer">
+    <span class="muted">
+      @if (pedido()?.costo_envio != null) {
+        Costo de envío cotizado: <strong>{{ pedido()?.costo_envio | currency: 'COP' : 'symbol-narrow' : '1.0-2' }}</strong>
+      }
+    </span>
+    <div class="buttons">
+      <a routerLink="/pedidos" class="btn btn-secondary">Cancelar</a>
       <button type="submit" class="btn" [disabled]="enviando() || bloqueado()">
-        {{ enviando() ? 'Guardando…' : 'Guardar' }}
+        {{ enviando() ? 'Guardando…' : editando() ? 'Guardar cambios' : 'Crear pedido' }}
       </button>
     </div>
-  </form>
-</section>
+  </div>
+</form>

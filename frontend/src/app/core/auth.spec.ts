@@ -74,4 +74,15 @@ describe('Auth', () => {
 
     expect(auth.autenticado()).toBe(false);
   });
+
+  it('cierra la sesión local aunque el servidor falle', () => {
+    iniciarSesion();
+
+    let completado = false;
+    auth.logout().subscribe(() => (completado = true));
+    http.expectOne('/api/logout').flush(null, { status: 500, statusText: 'Server Error' });
+
+    expect(completado).toBe(true);
+    expect(auth.autenticado()).toBe(false);
+  });
 });

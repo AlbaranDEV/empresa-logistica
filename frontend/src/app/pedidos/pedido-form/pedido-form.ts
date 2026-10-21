@@ -1,3 +1,4 @@
+import { CurrencyPipe } from '@angular/common';
 import { Component, computed, inject, input, numberAttribute, OnInit, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -5,6 +6,7 @@ import { Observable } from 'rxjs';
 import { Auth } from '../../core/auth';
 import { mensajeDeError } from '../../core/errores';
 import { DatosPedido, Pedido } from '../../core/models';
+import { Icon } from '../../shared/icon';
 import { PedidosApi } from '../pedidos-api';
 
 /**
@@ -12,7 +14,7 @@ import { PedidosApi } from '../pedidos-api';
  * El estado se cambia desde el listado.
  */
 @Component({
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, CurrencyPipe, Icon],
   selector: 'app-pedido-form',
   styleUrl: './pedido-form.scss',
   templateUrl: './pedido-form.html',
@@ -33,7 +35,7 @@ export class PedidoForm implements OnInit {
 
   protected readonly form = inject(NonNullableFormBuilder).group({
     cliente_id: [0, Validators.min(1)],
-    total: [0, [Validators.required, Validators.min(0.01)]],
+    total: [null as number | null, [Validators.required, Validators.min(0.01)]],
     fecha: [hoy(), Validators.required],
   });
 
@@ -61,7 +63,8 @@ export class PedidoForm implements OnInit {
       return;
     }
 
-    const datos: DatosPedido = this.form.getRawValue();
+    // El validador "required" garantiza que total no es null en este punto.
+    const datos = this.form.getRawValue() as DatosPedido;
     const id = this.id();
     const operacion: Observable<Pedido> = id === undefined ? this.api.crear(datos) : this.api.actualizar(id, datos);
 

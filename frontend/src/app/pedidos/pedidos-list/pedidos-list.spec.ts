@@ -12,7 +12,7 @@ const respuesta: Paginado<Pedido> = {
     { id: 1, cliente_id: 1, cliente, total: 1000, fecha: '2026-10-05', estado: 'pendiente', costo_envio: null },
     { id: 2, cliente_id: 1, cliente, total: 2000, fecha: '2026-10-06', estado: 'entregado', costo_envio: 18500 },
   ],
-  meta: { current_page: 1, last_page: 1, per_page: 15, total: 2 },
+  meta: { current_page: 1, last_page: 1, per_page: 15, total: 2, from: 1, to: 2 },
 };
 
 function iniciarComo(rol: Sesion['user']['rol']): void {

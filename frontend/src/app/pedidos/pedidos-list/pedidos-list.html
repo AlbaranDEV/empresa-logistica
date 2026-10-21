@@ -1,115 +1,169 @@
-<div class="encabezado">
-  <h1>Pedidos</h1>
-  <div class="acciones">
-    <label for="filtro-estado">Estado</label>
-    <select id="filtro-estado" (change)="filtrar($any($event.target).value)">
-      <option value="" [selected]="!estadoActual()">Todos</option>
-      @for (estado of estados; track estado) {
-        <option [value]="estado" [selected]="estado === estadoActual()">{{ estado }}</option>
-      }
-    </select>
-    <a routerLink="/pedidos/nuevo" class="btn">Nuevo pedido</a>
+<header class="page-header">
+  <div>
+    <span class="eyebrow">Operación</span>
+    <h1>Pedidos</h1>
+    <p>Consulta, filtra y actualiza el estado de los despachos.</p>
   </div>
-</div>
+  <a routerLink="/pedidos/nuevo" class="btn"><app-icon name="plus" /> Nuevo pedido</a>
+</header>
 
 @if (error(); as mensaje) {
-  <div class="alerta" role="alert">{{ mensaje }}</div>
+  <div class="alert" role="alert"><app-icon name="alert" /> {{ mensaje }}</div>
 }
 
-@if (pedidos.error()) {
-  <div class="alerta" role="alert">No fue posible cargar los pedidos.</div>
-} @else if (pedidos.hasValue()) {
-  @let resultado = pedidos.value();
-
-  <div class="tarjeta tabla-contenedor">
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Cliente</th>
-          <th>Ciudad</th>
-          <th>Fecha</th>
-          <th class="num">Total</th>
-          <th class="num">Costo envío</th>
-          <th>Estado</th>
-          <th>Cambiar estado</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (pedido of resultado.data; track pedido.id) {
-          <tr [class.ocupado]="procesando() === pedido.id">
-            <td>{{ pedido.id }}</td>
-            <td>{{ pedido.cliente?.nombre }}</td>
-            <td>{{ pedido.cliente?.ciudad }}</td>
-            <td>{{ pedido.fecha | date: 'mediumDate' : 'UTC' }}</td>
-            <td class="num">{{ pedido.total | currency: 'COP' : 'symbol-narrow' : '1.0-2' }}</td>
-            <td class="num">
-              @if (pedido.costo_envio !== null) {
-                {{ pedido.costo_envio | currency: 'COP' : 'symbol-narrow' : '1.0-2' }}
-              } @else {
-                <span class="suave">—</span>
-              }
-            </td>
-            <td><span class="estado" [class]="pedido.estado">{{ pedido.estado }}</span></td>
-            <td>
-              <select
-                #selector
-                [attr.aria-label]="'Cambiar estado del pedido ' + pedido.id"
-                [disabled]="bloqueado(pedido) || procesando() !== null"
-                (change)="cambiarEstado(pedido, selector)"
-              >
-                @for (estado of estados; track estado) {
-                  <option [value]="estado" [selected]="estado === pedido.estado">{{ estado }}</option>
-                }
-              </select>
-            </td>
-            <td class="acciones-fila">
-              @if (bloqueado(pedido)) {
-                <span class="suave" title="Solo un administrador puede modificar pedidos entregados">Bloqueado</span>
-              } @else {
-                <a class="btn btn-sm btn-secundario" [routerLink]="['/pedidos', pedido.id, 'editar']">Editar</a>
-                <button
-                  type="button"
-                  class="btn btn-sm btn-peligro"
-                  [disabled]="procesando() !== null"
-                  (click)="eliminar(pedido)"
-                >
-                  Eliminar
-                </button>
-              }
-            </td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="9" class="suave">No hay pedidos para este filtro.</td>
-          </tr>
-        }
-      </tbody>
-    </table>
+<section class="card">
+  <div class="card-header">
+    <div class="tabs" role="group" aria-label="Filtrar por estado">
+      <button type="button" class="tab" [class.active]="!estadoActual()" [attr.aria-pressed]="!estadoActual()" (click)="filtrar('')">
+        Todos
+      </button>
+      @for (estado of estados; track estado) {
+        <button
+          type="button"
+          class="tab"
+          [class.active]="estado === estadoActual()"
+          [attr.aria-pressed]="estado === estadoActual()"
+          (click)="filtrar(estado)"
+        >
+          <span class="dot" [class]="estado"></span>
+          {{ estado }}
+        </button>
+      }
+    </div>
+    @if (pedidos.hasValue()) {
+      <span class="muted total">{{ pedidos.value().meta.total }} pedidos</span>
+    }
   </div>
 
-  @if (resultado.meta.last_page > 1) {
-    <nav class="paginacion" aria-label="Paginación">
-      <button
-        type="button"
-        class="btn btn-sm btn-secundario"
-        [disabled]="resultado.meta.current_page <= 1"
-        (click)="irAPagina(resultado.meta.current_page - 1)"
-      >
-        Anterior
-      </button>
-      <span>Página {{ resultado.meta.current_page }} de {{ resultado.meta.last_page }} · {{ resultado.meta.total }} pedidos</span>
-      <button
-        type="button"
-        class="btn btn-sm btn-secundario"
-        [disabled]="resultado.meta.current_page >= resultado.meta.last_page"
-        (click)="irAPagina(resultado.meta.current_page + 1)"
-      >
-        Siguiente
-      </button>
+  @if (pedidos.error()) {
+    <div class="empty">
+      <span class="empty-icon"><app-icon name="alert" [size]="22" /></span>
+      <strong>No fue posible cargar los pedidos</strong>
+      <p>Revisa tu conexión e inténtalo de nuevo.</p>
+      <button type="button" class="btn btn-secondary btn-sm" (click)="pedidos.reload()">Reintentar</button>
+    </div>
+  } @else {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Pedido</th>
+            <th>Cliente</th>
+            <th>Fecha</th>
+            <th class="num">Total</th>
+            <th class="num">Costo de envío</th>
+            <th>Estado</th>
+            <th>Cambiar estado</th>
+            <th><span class="sr-only">Acciones</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (pedidos.hasValue()) {
+            @for (pedido of pedidos.value().data; track pedido.id) {
+              <tr [class.busy]="procesando() === pedido.id">
+                <td class="muted tabular">#{{ pedido.id }}</td>
+                <td class="primary-cell">
+                  {{ pedido.cliente?.nombre }}
+                  <span class="secondary-line"><app-icon name="map-pin" [size]="12" /> {{ pedido.cliente?.ciudad }}</span>
+                </td>
+                <td class="tabular">{{ pedido.fecha | date: 'mediumDate' : 'UTC' }}</td>
+                <td class="num primary-cell">{{ pedido.total | currency: 'COP' : 'symbol-narrow' : '1.0-2' }}</td>
+                <td class="num">
+                  @if (pedido.costo_envio !== null) {
+                    {{ pedido.costo_envio | currency: 'COP' : 'symbol-narrow' : '1.0-2' }}
+                  } @else {
+                    <span class="muted" title="Se calcula al despachar">—</span>
+                  }
+                </td>
+                <td><span class="badge" [class]="pedido.estado">{{ pedido.estado }}</span></td>
+                <td>
+                  <select
+                    #selector
+                    class="select select-sm"
+                    [attr.aria-label]="'Cambiar estado del pedido ' + pedido.id"
+                    [disabled]="bloqueado(pedido) || procesando() !== null"
+                    (change)="cambiarEstado(pedido, selector)"
+                  >
+                    @for (estado of estados; track estado) {
+                      <option [value]="estado" [selected]="estado === pedido.estado">{{ estado }}</option>
+                    }
+                  </select>
+                </td>
+                <td class="actions">
+                  @if (bloqueado(pedido)) {
+                    <span class="locked" title="Solo un administrador puede modificar pedidos entregados">
+                      <app-icon name="lock" [size]="14" /> Bloqueado
+                    </span>
+                  } @else {
+                    <a
+                      class="btn btn-icon"
+                      [routerLink]="['/pedidos', pedido.id, 'editar']"
+                      [attr.aria-label]="'Editar pedido ' + pedido.id"
+                      title="Editar"
+                    >
+                      <app-icon name="pencil" [size]="16" />
+                    </a>
+                    <button
+                      type="button"
+                      class="btn btn-icon btn-icon-danger"
+                      [attr.aria-label]="'Eliminar pedido ' + pedido.id"
+                      title="Eliminar"
+                      [disabled]="procesando() !== null"
+                      (click)="eliminar(pedido)"
+                    >
+                      <app-icon name="trash" [size]="16" />
+                    </button>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="8">
+                  <div class="empty">
+                    <span class="empty-icon"><app-icon name="inbox" [size]="22" /></span>
+                    <strong>No hay pedidos {{ estadoActual() ? 'en estado ' + estadoActual() : 'registrados' }}</strong>
+                    <p>Los pedidos que crees aparecerán aquí.</p>
+                  </div>
+                </td>
+              </tr>
+            }
+          } @else {
+            @for (fila of filasCargando; track fila) {
+              <tr aria-hidden="true">
+                @for (ancho of anchosEsqueleto; track $index) {
+                  <td><span class="skeleton" [style.width.px]="ancho"></span></td>
+                }
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (pedidos.hasValue() && pedidos.value().meta.total > 0) {
+    @let meta = pedidos.value().meta;
+    <nav class="card-footer" aria-label="Paginación">
+      <span>Mostrando <strong>{{ meta.from }}–{{ meta.to }}</strong> de <strong>{{ meta.total }}</strong></span>
+      <div class="pager">
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          [disabled]="meta.current_page <= 1"
+          (click)="irAPagina(meta.current_page - 1)"
+        >
+          <app-icon name="chevron-left" [size]="16" /> Anterior
+        </button>
+        <span class="tabular">{{ meta.current_page }} / {{ meta.last_page }}</span>
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          [disabled]="meta.current_page >= meta.last_page"
+          (click)="irAPagina(meta.current_page + 1)"
+        >
+          Siguiente <app-icon name="chevron-right" [size]="16" />
+        </button>
+      </div>
     </nav>
   }
-} @else {
-  <p class="suave">Cargando pedidos…</p>
-}
+</section>

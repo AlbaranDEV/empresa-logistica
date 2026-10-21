@@ -5,10 +5,11 @@ import { finalize, Observable } from 'rxjs';
 import { Auth } from '../../core/auth';
 import { mensajeDeError } from '../../core/errores';
 import { ESTADOS_PEDIDO, EstadoPedido, Pedido } from '../../core/models';
+import { Icon } from '../../shared/icon';
 import { FiltroPedidos, PedidosApi } from '../pedidos-api';
 
 @Component({
-  imports: [RouterLink, CurrencyPipe, DatePipe],
+  imports: [RouterLink, CurrencyPipe, DatePipe, Icon],
   selector: 'app-pedidos-list',
   styleUrl: './pedidos-list.scss',
   templateUrl: './pedidos-list.html',
@@ -23,6 +24,8 @@ export class PedidosList {
   readonly page = input(1, { transform: (valor: unknown) => numberAttribute(valor, 1) });
 
   protected readonly estados = ESTADOS_PEDIDO;
+  protected readonly filasCargando = Array.from({ length: 6 }, (_, i) => i);
+  protected readonly anchosEsqueleto = [40, 160, 90, 90, 80, 90, 120, 60];
   protected readonly estadoActual = computed(() => {
     const estado = this.estado() as EstadoPedido;
     return ESTADOS_PEDIDO.includes(estado) ? estado : undefined;

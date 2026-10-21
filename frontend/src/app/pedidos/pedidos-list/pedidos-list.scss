@@ -1,26 +1,103 @@
-.acciones {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border-radius: var(--radius);
+  background: var(--bg-subtle);
+}
 
-  label {
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 32px;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  text-transform: capitalize;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+
+  &:hover {
+    color: var(--text);
+  }
+
+  &.active {
+    background: var(--bg-surface);
+    color: var(--text);
     font-weight: 600;
+    box-shadow: var(--shadow);
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+
+    &.pendiente {
+      background: var(--estado-pendiente);
+    }
+
+    &.despachado {
+      background: var(--estado-despachado);
+    }
+
+    &.entregado {
+      background: var(--estado-entregado);
+    }
   }
 }
 
-.acciones-fila {
-  display: flex;
-  gap: 0.4rem;
+.total {
+  font-size: var(--text-sm);
 }
 
-tr.ocupado {
+.secondary-line {
+  display: flex !important;
+  align-items: center;
+  gap: 2px;
+  margin-top: 2px;
+}
+
+.select-sm {
+  text-transform: capitalize;
+}
+
+.actions {
+  width: 1%;
+}
+
+.actions,
+.actions > * {
+  vertical-align: middle;
+}
+
+.locked {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+tr.busy {
   opacity: 0.5;
+  pointer-events: none;
 }
 
-.paginacion {
+.pager {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 1rem;
+  gap: var(--space-3);
+}
+
+.actions .btn-icon + .btn-icon {
+  margin-left: var(--space-1);
 }

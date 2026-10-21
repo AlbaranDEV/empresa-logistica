@@ -2,9 +2,10 @@ import { registerLocaleData } from '@angular/common';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import localeEsCo from '@angular/common/locales/es-CO';
 import { ApplicationConfig, DEFAULT_CURRENCY_CODE, LOCALE_ID, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideRouter, withComponentInputBinding } from '@angular/router';
+import { provideRouter, TitleStrategy, withComponentInputBinding } from '@angular/router';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/auth-interceptor';
+import { Titulo } from './core/titulo';
 
 registerLocaleData(localeEsCo);
 
@@ -15,5 +16,6 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([authInterceptor])),
     { provide: LOCALE_ID, useValue: 'es-CO' },
     { provide: DEFAULT_CURRENCY_CODE, useValue: 'COP' },
+    { provide: TitleStrategy, useClass: Titulo },
   ]
 };

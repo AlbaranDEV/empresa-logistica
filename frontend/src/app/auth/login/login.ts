@@ -3,9 +3,10 @@ import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { Router } from '@angular/router';
 import { Auth } from '../../core/auth';
 import { mensajeDeError } from '../../core/errores';
+import { Icon } from '../../shared/icon';
 
 @Component({
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, Icon],
   selector: 'app-login',
   styleUrl: './login.scss',
   templateUrl: './login.html',
@@ -18,6 +19,7 @@ export class Login {
     email: ['', [Validators.required, Validators.email]],
     password: ['', Validators.required],
   });
+  protected readonly anio = new Date().getFullYear();
   protected readonly enviando = signal(false);
   protected readonly error = signal<string | null>(null);
 
