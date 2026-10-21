@@ -4,7 +4,7 @@ set -e
 cd /var/www/html
 
 # Instala dependencias si aún no existen (primer arranque)
-if [ -f composer.json ] && [ ! -d vendor ]; then
+if [ -f composer.json ] && [ ! -f vendor/autoload.php ]; then
     composer install --no-interaction --prefer-dist
 fi
 

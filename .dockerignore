@@ -1,0 +1,3 @@
+# Las imágenes solo copian archivos de docker/; el código se monta como volumen.
+*
+!docker/
