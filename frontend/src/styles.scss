@@ -1,1 +1,190 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --color-primario: #1d4ed8;
+  --color-primario-hover: #1e40af;
+  --color-texto: #1f2937;
+  --color-suave: #6b7280;
+  --color-borde: #e5e7eb;
+  --color-fondo: #f3f4f6;
+  --color-superficie: #ffffff;
+  --color-peligro: #b91c1c;
+  --radio: 6px;
+
+  --estado-pendiente: #92400e;
+  --estado-pendiente-fondo: #fef3c7;
+  --estado-despachado: #1e40af;
+  --estado-despachado-fondo: #dbeafe;
+  --estado-entregado: #166534;
+  --estado-entregado-fondo: #dcfce7;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--color-texto);
+  background: var(--color-fondo);
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin: 0 0 1rem;
+}
+
+.tarjeta {
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+  padding: 1.25rem;
+}
+
+.encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid transparent;
+  border-radius: var(--radio);
+  background: var(--color-primario);
+  color: #fff;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: var(--color-primario-hover);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-secundario {
+  background: transparent;
+  color: inherit;
+  border-color: currentColor;
+
+  &:hover:not(:disabled) {
+    background: rgb(0 0 0 / 0.06);
+  }
+}
+
+.btn-peligro {
+  background: var(--color-peligro);
+
+  &:hover:not(:disabled) {
+    background: #991b1b;
+  }
+}
+
+.btn-sm {
+  padding: 0.25rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+input,
+select {
+  font: inherit;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+  background: #fff;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 1rem;
+
+  label {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .error-campo {
+    color: var(--color-peligro);
+    font-size: 0.8rem;
+  }
+}
+
+.alerta {
+  padding: 0.75rem 1rem;
+  border-radius: var(--radio);
+  margin-bottom: 1rem;
+  background: #fee2e2;
+  color: var(--color-peligro);
+}
+
+.tabla-contenedor {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-superficie);
+
+  th,
+  td {
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--color-borde);
+    white-space: nowrap;
+  }
+
+  th {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--color-suave);
+  }
+
+  .num {
+    text-align: right;
+  }
+}
+
+.estado {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: capitalize;
+
+  &.pendiente {
+    color: var(--estado-pendiente);
+    background: var(--estado-pendiente-fondo);
+  }
+
+  &.despachado {
+    color: var(--estado-despachado);
+    background: var(--estado-despachado-fondo);
+  }
+
+  &.entregado {
+    color: var(--estado-entregado);
+    background: var(--estado-entregado-fondo);
+  }
+}
+
+.suave {
+  color: var(--color-suave);
+}

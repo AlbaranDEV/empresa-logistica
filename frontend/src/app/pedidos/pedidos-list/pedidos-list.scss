@@ -1,0 +1,26 @@
+.acciones {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  label {
+    font-weight: 600;
+  }
+}
+
+.acciones-fila {
+  display: flex;
+  gap: 0.4rem;
+}
+
+tr.ocupado {
+  opacity: 0.5;
+}
+
+.paginacion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}

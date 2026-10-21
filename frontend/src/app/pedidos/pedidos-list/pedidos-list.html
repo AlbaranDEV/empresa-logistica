@@ -1,0 +1,115 @@
+<div class="encabezado">
+  <h1>Pedidos</h1>
+  <div class="acciones">
+    <label for="filtro-estado">Estado</label>
+    <select id="filtro-estado" (change)="filtrar($any($event.target).value)">
+      <option value="" [selected]="!estadoActual()">Todos</option>
+      @for (estado of estados; track estado) {
+        <option [value]="estado" [selected]="estado === estadoActual()">{{ estado }}</option>
+      }
+    </select>
+    <a routerLink="/pedidos/nuevo" class="btn">Nuevo pedido</a>
+  </div>
+</div>
+
+@if (error(); as mensaje) {
+  <div class="alerta" role="alert">{{ mensaje }}</div>
+}
+
+@if (pedidos.error()) {
+  <div class="alerta" role="alert">No fue posible cargar los pedidos.</div>
+} @else if (pedidos.hasValue()) {
+  @let resultado = pedidos.value();
+
+  <div class="tarjeta tabla-contenedor">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Cliente</th>
+          <th>Ciudad</th>
+          <th>Fecha</th>
+          <th class="num">Total</th>
+          <th class="num">Costo envío</th>
+          <th>Estado</th>
+          <th>Cambiar estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (pedido of resultado.data; track pedido.id) {
+          <tr [class.ocupado]="procesando() === pedido.id">
+            <td>{{ pedido.id }}</td>
+            <td>{{ pedido.cliente?.nombre }}</td>
+            <td>{{ pedido.cliente?.ciudad }}</td>
+            <td>{{ pedido.fecha | date: 'mediumDate' : 'UTC' }}</td>
+            <td class="num">{{ pedido.total | currency: 'COP' : 'symbol-narrow' : '1.0-2' }}</td>
+            <td class="num">
+              @if (pedido.costo_envio !== null) {
+                {{ pedido.costo_envio | currency: 'COP' : 'symbol-narrow' : '1.0-2' }}
+              } @else {
+                <span class="suave">—</span>
+              }
+            </td>
+            <td><span class="estado" [class]="pedido.estado">{{ pedido.estado }}</span></td>
+            <td>
+              <select
+                #selector
+                [attr.aria-label]="'Cambiar estado del pedido ' + pedido.id"
+                [disabled]="bloqueado(pedido) || procesando() !== null"
+                (change)="cambiarEstado(pedido, selector)"
+              >
+                @for (estado of estados; track estado) {
+                  <option [value]="estado" [selected]="estado === pedido.estado">{{ estado }}</option>
+                }
+              </select>
+            </td>
+            <td class="acciones-fila">
+              @if (bloqueado(pedido)) {
+                <span class="suave" title="Solo un administrador puede modificar pedidos entregados">Bloqueado</span>
+              } @else {
+                <a class="btn btn-sm btn-secundario" [routerLink]="['/pedidos', pedido.id, 'editar']">Editar</a>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-peligro"
+                  [disabled]="procesando() !== null"
+                  (click)="eliminar(pedido)"
+                >
+                  Eliminar
+                </button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="9" class="suave">No hay pedidos para este filtro.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (resultado.meta.last_page > 1) {
+    <nav class="paginacion" aria-label="Paginación">
+      <button
+        type="button"
+        class="btn btn-sm btn-secundario"
+        [disabled]="resultado.meta.current_page <= 1"
+        (click)="irAPagina(resultado.meta.current_page - 1)"
+      >
+        Anterior
+      </button>
+      <span>Página {{ resultado.meta.current_page }} de {{ resultado.meta.last_page }} · {{ resultado.meta.total }} pedidos</span>
+      <button
+        type="button"
+        class="btn btn-sm btn-secundario"
+        [disabled]="resultado.meta.current_page >= resultado.meta.last_page"
+        (click)="irAPagina(resultado.meta.current_page + 1)"
+      >
+        Siguiente
+      </button>
+    </nav>
+  }
+} @else {
+  <p class="suave">Cargando pedidos…</p>
+}

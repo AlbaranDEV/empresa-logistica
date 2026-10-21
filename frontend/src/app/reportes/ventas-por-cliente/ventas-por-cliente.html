@@ -1,0 +1,43 @@
+@if (reporte.error()) {
+  <h1>Ventas por cliente</h1>
+  <div class="alerta" role="alert">No fue posible cargar el reporte.</div>
+} @else if (reporte.hasValue()) {
+  @let resultado = reporte.value();
+
+  <div class="encabezado">
+    <h1>Ventas por cliente · <span class="mes">{{ resultado.mes + '-01' | date: 'MMMM y' : 'UTC' }}</span></h1>
+    <strong>Total del mes: {{ totalGeneral() | currency: 'COP' : 'symbol-narrow' : '1.0-2' }}</strong>
+  </div>
+
+  <div class="tarjeta tabla-contenedor">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Cliente</th>
+          <th>Ciudad</th>
+          <th class="num">Pedidos</th>
+          <th class="num">Total vendido</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (cliente of resultado.data; track cliente.id; let posicion = $index) {
+          <tr>
+            <td>{{ posicion + 1 }}</td>
+            <td>{{ cliente.nombre }}</td>
+            <td>{{ cliente.ciudad }}</td>
+            <td class="num">{{ cliente.cantidad_pedidos }}</td>
+            <td class="num">{{ cliente.total_vendido | currency: 'COP' : 'symbol-narrow' : '1.0-2' }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="suave">No hay ventas registradas en el mes actual.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+} @else {
+  <h1>Ventas por cliente</h1>
+  <p class="suave">Cargando reporte…</p>
+}
